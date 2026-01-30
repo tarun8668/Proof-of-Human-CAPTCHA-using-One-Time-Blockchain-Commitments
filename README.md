@@ -1,254 +1,374 @@
-# Proof-of-Human CAPTCHA using One-Time Blockchain Commitments
 
-A decentralized CAPTCHA verification framework for Web3 applications, designed to prevent Sybil attacks, automated bot participation, and mempool-based front-running through one-time cryptographic blockchain commitments.
-
----
-
-## Project Overview
-
-Decentralized applications (dApps) operate in an open and permissionless environment. While this transparency enables trustless participation, it also creates a major attack surface for automated bot-nets capable of executing high-frequency transactions.
-
-In environments such as DeFi platforms, NFT minting, and decentralized governance systems, bots can overwhelm smart contract resources, crowd out legitimate human users, and exploit mempool visibility.
-
-Traditional CAPTCHA systems fail in blockchain ecosystems due to two major limitations:
-
-1. Reliance on centralized verification servers, contradicting decentralization.
-2. Exposure of CAPTCHA solutions in the public transaction mempool, enabling solution hijacking and front-running.
-
-This project introduces a novel Proof-of-Human (PoH) framework using a one-time commit–reveal protocol that binds CAPTCHA solutions to a specific wallet identity before the answer is revealed.
+#  Proof-of-Human CAPTCHA using One-Time Blockchain Commitments
 
 ---
 
-## Authors
- 
-Tarun S S  
-Department of Computer Science and Engineering  
-Saveetha Engineering College, Chennai, India  
-Email: tarunsenthil69@gmail.com  
+## 1. Introduction
 
-Prakasam P  
-Department of Computer Science and Engineering  
-Saveetha Engineering College, Chennai, India  
-Email: prakasamprofessional@gmail.com  
+### 1.1 Background
 
-Kishore M  
-Department of Computer Science and Engineering  
-Saveetha Engineering College, Chennai, India  
-Email: mkishore12a3@gmail.com 
----
+With the rapid expansion of online platforms, cloud services, and decentralized applications, the need for reliable mechanisms to distinguish **human users from automated bots** has become increasingly critical. Bots are widely used for spam generation, fake account creation, credential stuffing, denial-of-service attacks, and large-scale abuse of digital services.
 
-## Abstract
+To mitigate these threats, **CAPTCHA systems** (Completely Automated Public Turing Test to Tell Computers and Humans Apart) are commonly deployed as a first line of defense. Traditional CAPTCHA mechanisms rely on distorted text recognition, image selection, or behavioral analysis to verify human presence.
 
-As decentralized applications scale, they become primary targets for automated bot-nets capable of executing Sybil attacks, front-running transactions, and exhausting smart contract resources. Traditional CAPTCHA mechanisms fail in the Web3 ecosystem because they rely on centralized verification and remain vulnerable to mempool answer-sniping.
-
-This work proposes a Proof-of-Human (PoH) framework utilizing One-Time Blockchain Commitments. By employing a two-phase commit–reveal protocol, the system links a user’s wallet address to a specific CAPTCHA solution before the answer is revealed. This ensures that bots cannot replicate or front-run human solutions.
-
-Evaluation results indicate that the framework significantly raises the economic cost for bot operators while maintaining low gas overhead for legitimate users.
+However, advances in **artificial intelligence, deep learning, and automated CAPTCHA-solving services** have significantly reduced the effectiveness of these systems. Modern AI models can solve text- and image-based CAPTCHAs with high accuracy, making traditional approaches unreliable for modern security needs.
 
 ---
 
-## Index Terms
+### 1.2 Limitations of Traditional CAPTCHA Systems
 
-Blockchain, CAPTCHA, Proof-of-Human, Sybil Resistance, Cryptographic Commitments, Smart Contracts, Bot Mitigation
+Traditional CAPTCHA systems suffer from several critical limitations:
 
----
+- **Vulnerability to AI-based attacks**  
+  Deep learning models can solve CAPTCHAs at scale with high accuracy.
 
-## Motivation
+- **Replay Attacks**  
+  Solved CAPTCHA responses can be reused or shared.
 
-Blockchain networks are designed for openness and transparency. However, these properties are frequently exploited by automated adversaries.
+- **Centralization**  
+  Most CAPTCHA systems rely on third-party providers, creating single points of failure.
 
-Bots can:
+- **Privacy Concerns**  
+  Behavioral tracking and data collection raise ethical and regulatory issues.
 
-- Submit thousands of transactions per second
-- Front-run legitimate user interactions
-- Manipulate NFT mints and token launches
-- Spam governance voting systems
-- Exhaust smart contract execution limits
+- **Lack of Cryptographic Proof**  
+  There is no verifiable proof that a CAPTCHA was solved by a human.
 
-Existing CAPTCHA solutions such as Google reCAPTCHA or Cloudflare Turnstile require centralized servers, creating a decentralization paradox in Web3.
-
-More critically, if CAPTCHA solutions are submitted directly on-chain, they are exposed in the Ethereum mempool, allowing bots to copy valid answers and execute higher-gas transactions to be processed first.
-
----
-
-## Related Work
-
-### Sybil Attacks in Blockchain
-
-Sybil attacks occur when an adversary generates multiple fake identities to gain disproportionate influence. While Proof-of-Work and Proof-of-Stake attach cost to participation, they do not verify whether the participant is human.
-
-### Limitations of Standard CAPTCHA
-
-Traditional CAPTCHA systems rely on secret keys held by centralized authorities. This creates a single point of failure, introduces censorship risk, and raises privacy concerns regarding user tracking.
-
-### Commitment Schemes
-
-Cryptographic commitment schemes allow a user to commit to a value while keeping it hidden, with the ability to reveal it later. This work adapts Keccak256-based commitments for Ethereum Virtual Machine constraints.
+These limitations make traditional CAPTCHA systems unsuitable for **high-security, decentralized, and privacy-sensitive applications**.
 
 ---
 
-## Proposed System Architecture
+### 1.3 Project Vision
 
-The framework consists of three stages:
+This project introduces a **Proof-of-Human CAPTCHA system using One-Time Blockchain Commitments**, which provides:
 
-1. Challenge Generation  
-2. Commitment Phase  
-3. Reveal and Verification Phase  
+- Cryptographic proof that a CAPTCHA was solved by a human
+- Strict one-time usage to prevent replay attacks
+- Decentralized, trustless verification using blockchain
+- Privacy-preserving human authentication without behavioral tracking
 
----
-
-## Challenge Generation
-
-A CAPTCHA challenge `C` is generated off-chain through either:
-
-- A decentralized oracle network
-- A trusted execution environment (TEE)
-
-Each challenge includes:
-
-- A unique challenge identifier `IDc`
-- A timestamp `T`
+The system combines CAPTCHA interaction with **blockchain immutability and smart contracts** to create a robust and verifiable human authentication mechanism.
 
 ---
 
-## Commitment Phase (Phase 1)
+## 2. Problem Statement
 
-To prevent front-running, the user does not submit the CAPTCHA answer directly. Instead, they compute a one-time cryptographic commitment.
+### 2.1 Core Problem Definition
 
-Commitment computation:
-
-K = keccak256(A || s || msg.sender)
-
-Where:
-
-- A is the CAPTCHA solution
-- s is a randomly generated salt
-- msg.sender is the user’s wallet address
-
-The commitment hash `K` is submitted to the smart contract via:
-
-commit(K)
-
-The contract stores:
-
-- Commitment hash
-- Block number
-- Challenge identifier
-
-At this stage, the solution remains hidden while being cryptographically bound to the user.
+**How can a CAPTCHA system provide verifiable, replay-resistant proof of human participation in a decentralized and trustless manner, while preserving user privacy and resisting modern AI-based attacks?**
 
 ---
 
-## Reveal Phase (Phase 2)
+### 2.2 Key Challenges
 
-After a minimum delay of `N` blocks (ensuring transaction finality), the user reveals:
+1. **AI-Based CAPTCHA Solving**
+   - Bots can solve visual and text CAPTCHAs with high accuracy.
 
-- The clear CAPTCHA answer `A`
-- The salt `s`
+2. **Replay and Reuse Attacks**
+   - Solved CAPTCHAs can be reused by automated systems.
 
-reveal(A, s)
+3. **Centralized Verification**
+   - Reliance on third-party CAPTCHA providers introduces trust and availability issues.
 
-The contract recomputes:
+4. **Lack of Proof**
+   - No cryptographic evidence exists that a CAPTCHA was solved by a human.
 
-K' = keccak256(A || s || msg.sender)
-
-The solution is accepted if and only if:
-
-- K' equals the stored commitment K
-- block.number is greater than or equal to commit.block + N
-
----
-
-## Security Properties
-
-### Binding
-
-Once the commitment is submitted, the user cannot change the answer or salt without producing a different hash.
-
-### Hiding
-
-Given only K, an adversary cannot recover A due to:
-
-- One-way Keccak256 hashing
-- High entropy salt values
+5. **Privacy Risks**
+   - Behavioral and biometric data collection threatens user privacy.
 
 ---
 
-## Resistance to Front-Running
+### 2.3 Impact of the Problem
 
-An adversary observing a reveal transaction cannot reuse the answer because the commitment includes the wallet address.
-
-If attacker B submits the same reveal:
-
-TestK = keccak256(A || s || B.address)
-
-Since B.address differs from the original user:
-
-TestK ≠ K
-
-The contract rejects the transaction.
-
-Thus, bots cannot hijack human proofs.
+- **Security Risk**: Automated abuse and bot attacks
+- **User Trust Erosion**: Frustrating and invasive CAPTCHA systems
+- **Barrier to Decentralization**: CAPTCHA unsuitable for blockchain-based platforms
 
 ---
 
-## Implementation and Performance
+## 3. Scope of the Project
 
-### Gas Overhead
+### 3.1 Included Scope
 
-Test deployment on Ethereum testnet shows:
-
-- commit() consumes approximately 45,000 gas
-- reveal() consumes approximately 30,000 gas
-
-While this introduces a two-transaction workflow, it remains feasible for high-value operations such as:
-
-- NFT mint access control
-- DAO voting participation
-- DeFi anti-bot gating
-
-### Latency
-
-The system introduces a delay of N blocks (approximately 12 seconds per block on Ethereum mainnet). For human-centric interactions, this overhead is negligible.
+- Design of a decentralized Proof-of-Human CAPTCHA architecture
+- One-time cryptographic commitment generation
+- Smart contract-based verification and invalidation
+- Replay attack prevention mechanisms
+- Privacy-preserving verification (no personal data)
+- Integration with web and decentralized applications
 
 ---
 
-## Optimization Strategies
+### 3.2 Excluded Scope
 
-To improve feasibility for retail users, the smart contract uses:
-
-- bytes32 commitment storage
-- Packed commitment structs
-- Reduced SSTORE operations
-
-This decreases commit-phase gas cost by approximately 15 percent.
+- Long-term digital identity management
+- Biometric authentication
+- Full production-scale deployment
+- Cross-chain interoperability
 
 ---
 
-## Economic Cost to Bot Operators
+## 4. Methodology
 
-Bots must pay gas twice per attempt. Combined with CAPTCHA solving uncertainty, this increases the cost of automated exploitation beyond practical profitability.
+### 4.1 Research Approach
 
-Additional defense mechanisms include:
+1. **Literature Review**
+   - Traditional CAPTCHA systems
+   - AI-based CAPTCHA attacks
+   - Blockchain-based verification models
 
-- Minimum salt entropy enforcement
-- Cooldowns or slashing for repeated failures
+2. **System Design**
+   - CAPTCHA + cryptographic commitment model
+   - One-time usage enforcement
+   - Smart contract verification logic
+
+3. **Prototype Development**
+   - CAPTCHA challenge module
+   - Commitment generation using cryptographic hashes
+   - Blockchain storage and verification
+
+4. **Testing & Evaluation**
+   - Replay attack resistance
+   - One-time usage validation
+   - Performance and scalability analysis
 
 ---
 
-## Conclusion
+### 4.2 Assumptions
 
-This project demonstrates that One-Time Blockchain Commitments provide an effective decentralized defense against bot-net participation in Web3 environments.
-
-By binding CAPTCHA solutions to cryptographic wallet identity, the protocol eliminates mempool solution hijacking and increases Sybil resistance without centralized verification.
+- Blockchain consensus is secure
+- Cryptographic hash functions are collision-resistant
+- Smart contracts execute correctly
+- Adversaries cannot control majority of blockchain validators
 
 ---
 
-## Future Work
+## 5. System Architecture
 
-Future extensions include:
+### 5.1 High-Level Architecture
 
-- Zero-Knowledge Proof integration to validate solutions without revealing them
-- Decentralized CAPTCHA hosting through IPFS
-- Further MEV-resistant transaction structuring
-- Adaptive difficulty and rate-limiting mechanisms
+```
+
+User
+│
+│ Solve CAPTCHA
+▼
+Web Application
+│
+│ Generate One-Time Commitment
+▼
+Commitment Generator
+│
+│ Store Hash
+▼
+Blockchain Network
+│
+│ Verify & Invalidate
+▼
+Smart Contract
+│
+│ Result
+▼
+Access Granted / Denied
+
+```
+
+---
+
+### 5.2 Component Description
+
+**User Interface**
+- Displays CAPTCHA challenge
+- Collects CAPTCHA response
+
+**Web Application**
+- Validates CAPTCHA
+- Generates cryptographic commitment
+
+**Commitment Generator**
+- Produces unique, one-time hash values
+
+**Blockchain Network**
+- Stores immutable commitment hashes
+
+**Smart Contract**
+- Verifies commitment authenticity
+- Enforces single-use policy
+
+---
+
+## 6. System Flow
+
+### Flow 1: CAPTCHA Verification
+
+```
+
+1. User requests protected resource
+2. CAPTCHA challenge displayed
+3. User solves CAPTCHA
+4. Commitment generated
+5. Commitment hash stored on blockchain
+6. Smart contract verifies commitment
+7. Commitment invalidated
+8. Access granted or denied
+
+```
+
+---
+
+### Flow 2: Replay Attack Prevention
+
+```
+
+1. Attacker reuses old commitment
+2. Smart contract checks usage status
+3. Commitment already marked as used
+4. Verification rejected
+
+```
+
+---
+
+## 7. Algorithm Used
+
+### One-Time Blockchain Commitment Algorithm
+
+```
+
+Input: CAPTCHA solution S
+Output: One-time verification result
+
+1. Verify CAPTCHA correctness
+2. Generate random nonce N
+3. Compute commitment C = SHA256(S || N || timestamp)
+4. Store hash(C) on blockchain
+5. Verify C via smart contract
+6. If unused:
+   Mark C as used
+   Grant access
+   Else:
+   Reject request
+
+```
+
+---
+
+### Correctness Properties
+
+- **Replay Resistance**: Commitment invalidated after use
+- **Integrity**: Blockchain immutability prevents tampering
+- **Privacy**: No user data stored
+- **Trustlessness**: No central authority required
+
+---
+
+## 8. Functional Requirements
+
+- Display CAPTCHA challenge
+- Validate CAPTCHA solution
+- Generate one-time commitment
+- Store commitment hash on blockchain
+- Verify commitment via smart contract
+- Invalidate commitment after use
+- Grant or deny access
+
+---
+
+## 9. Non-Functional Requirements
+
+- Strong resistance to bots
+- Low latency verification
+- High scalability
+- Privacy preservation
+- High availability
+- Minimal transaction overhead
+
+---
+
+## 10. Implementation Overview
+
+### Technology Stack
+
+- Blockchain: Ethereum / Local Blockchain
+- Smart Contracts: Solidity
+- Backend: Node.js
+- Cryptography: SHA-256
+- Frontend: HTML / JavaScript
+- CAPTCHA Engine: Custom / Existing CAPTCHA API
+
+---
+
+## 11. Testing and Results
+
+### Functional Test Cases
+
+| Test Case | Description | Result |
+|---------|------------|--------|
+| CAPTCHA solved correctly | Valid human input | PASS |
+| Replay attack attempt | Reuse commitment | PASS |
+| Invalid CAPTCHA | Wrong input | PASS |
+| Duplicate verification | Commitment reused | PASS |
+
+---
+
+### Security Evaluation
+
+- Replay attacks successfully prevented
+- Commitment reuse rejected
+- Blockchain integrity preserved
+- No sensitive data exposure
+
+---
+
+## 12. Advantages of the Proposed System
+
+| Traditional CAPTCHA | Proposed System |
+|--------------------|----------------|
+| Centralized | Decentralized |
+| Replay vulnerable | One-time proof |
+| No cryptographic proof | Blockchain-backed |
+| Privacy invasive | Privacy-preserving |
+
+---
+
+## 13. Conclusion
+
+The Proof-of-Human CAPTCHA using One-Time Blockchain Commitments provides a **secure, decentralized, and replay-resistant human verification mechanism**. By combining CAPTCHA challenges with blockchain immutability and smart contract enforcement, the system overcomes the limitations of traditional CAPTCHA systems.
+
+The proposed approach ensures:
+- Verifiable proof of human participation
+- Strong resistance to automated attacks
+- Preservation of user privacy
+- Trustless and transparent verification
+
+This system is well-suited for modern web applications and decentralized platforms requiring robust human authentication.
+
+---
+
+## 14. Future Enhancements
+
+- Zero-knowledge proof-based CAPTCHA verification
+- Layer-2 blockchain integration for scalability
+- Adaptive CAPTCHA difficulty
+- Integration with decentralized identity systems
+- Support for multi-chain verification
+
+---
+
+## 15. References
+
+1. Nakamoto, S. *Bitcoin: A Peer-to-Peer Electronic Cash System*, 2008  
+2. Buterin, V. *Ethereum Whitepaper*, 2014  
+3. Yang et al., *Publicly Verifiable Deletion for Cloud Storage*, IEEE, 2018  
+4. Merlec et al., *Decentralized Verification Systems*, 2024  
+5. CAPTCHA Security Analysis Reports, ACM Digital Library
+
+---
+
+## Author
+
+**Tarun S S**  
+B.E. Computer Science and Engineering  
+Saveetha Engineering College  
+
+---
